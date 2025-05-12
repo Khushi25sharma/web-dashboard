@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Dashboard</title>
+  <!-- Configure Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: 'var(--accent-primary)',
+            secondary: 'var(--accent-secondary)',
+            success: 'var(--success-color)',
+            warning: 'var(--warning-color)',
+            danger: 'var(--danger-color)',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Load Chart.js and ApexCharts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.5/dist/apexcharts.min.js"></script>
+  <script src="js/script.js"></script>
+  <style>
+    /* Custom styles */
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f3f4f6;
+      --text-primary: #1f2937;
+      --text-secondary: #4b5563;
+      --accent-primary: #3b82f6;
+      --accent-secondary: #60a5fa;
+      --border-color: #e5e7eb;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+    }
+    
+    .theme-light {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f3f4f6;
+      --text-primary: #1f2937;
+      --text-secondary: #4b5563;
+      --accent-primary: #3b82f6;
+      --accent-secondary: #60a5fa;
+      --border-color: #e5e7eb;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+    }
+    
+    .theme-dark {
+      --bg-primary: #1f2937;
+      --bg-secondary: #111827;
+      --text-primary: #f9fafb;
+      --text-secondary: #e5e7eb;
+      --accent-primary: #60a5fa;
+      --accent-secondary: #93c5fd;
+      --border-color: #374151;
+      --success-color: #34d399;
+      --warning-color: #fbbf24;
+      --danger-color: #f87171;
+    }
+    
+    .theme-earth {
+      --bg-primary: #f8f5f0;
+      --bg-secondary: #e9e2d9;
+      --text-primary: #433a31;
+      --text-secondary: #6b5d4c;
+      --accent-primary: #8A9C81;
+      --accent-secondary: #A88575;
+      --border-color: #d3c9bc;
+      --success-color: #1E6356;
+      --warning-color: #d97706;
+      --danger-color: #E14A39;
+    }
+    
+    .theme-forest {
+      --bg-primary: #0A3834;
+      --bg-secondary: #0d4b46;
+      --text-primary: #e5e7eb;
+      --text-secondary: #c5c7ca;
+      --accent-primary: #8A9C81;
+      --accent-secondary: #D8CFC1;
+      --border-color: #2d6e67;
+      --success-color: #6ee7b7;
+      --warning-color: #fcd34d;
+      --danger-color: #fca5a5;
+    }
+    
+    /* New Modern Themes */
+    .theme-neo-cyberpunk {
+      --bg-primary: #0a0b1e;
+      --bg-secondary: #12153a;
+      --text-primary: #ffffff;
+      --text-secondary: #8f94cc;
+      --accent-primary: #00fff2;
+      --accent-secondary: #ff00d4;
+      --border-color: #1f2458;
+      --success-color: #00ffa3;
+      --warning-color: #ff9c00;
+      --danger-color: #ff2d6c;
+    }
+
+    .theme-quantum {
+      --bg-primary: #1a0b2e;
+      --bg-secondary: #2d1b4e;
+      --text-primary: #ffffff;
+      --text-secondary: #9d8cb7;
+      --accent-primary: #9d00ff;
+      --accent-secondary: #621aff;
+      --border-color: #3d2a5e;
+      --success-color: #00ffb7;
+      --warning-color: #ffb700;
+      --danger-color: #ff4081;
+    }
+
+    .theme-glacier {
+      --bg-primary: #eef5ff;
+      --bg-secondary: #e0edff;
+      --text-primary: #1b2b4d;
+      --text-secondary: #4a5d82;
+      --accent-primary: #0066ff;
+      --accent-secondary: #00ccff;
+      --border-color: #cce0ff;
+      --success-color: #00d4b0;
+      --warning-color: #3d8aff;
+      --danger-color: #ff3d7f;
+    }
+
+    .theme-sunset {
+      --bg-primary: #2c1810;
+      --bg-secondary: #3d1d12;
+      --text-primary: #fff6e5;
+      --text-secondary: #ffc38a;
+      --accent-primary: #ff6b2c;
+      --accent-secondary: #ffa149;
+      --border-color: #4d2416;
+      --success-color: #00e6aa;
+      --warning-color: #ffcc00;
+      --danger-color: #ff4d4d;
+    }
+
+    .theme-matrix {
+      --bg-primary: #0c1714;
+      --bg-secondary: #162622;
+      --text-primary: #00ff9d;
+      --text-secondary: #00cc7d;
+      --accent-primary: #00ff66;
+      --accent-secondary: #00cc52;
+      --border-color: #1a332b;
+      --success-color: #00ff88;
+      --warning-color: #ffcc00;
+      --danger-color: #ff3333;
+    }
+    
+    .theme-wrapper {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+    }
+    
+    .bg-secondary {
+      background-color: var(--bg-secondary);
+    }
+    
+    .text-secondary {
+      color: var(--text-secondary);
+    }
+    
+    .accent-primary {
+      background-color: var(--accent-primary);
+      color: var(--bg-primary);
+    }
+    
+    .accent-border {
+      border-color: var(--accent-primary);
+    }
+    
+    .border-theme {
+      border-color: var(--border-color);
+    }
+    
+    .success {
+      color: var(--success-color);
+    }
+    
+    .warning {
+      color: var(--warning-color);
+    }
+    
+    .danger {
+      color: var(--danger-color);
+    }
+    
+    .card {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .chart-container {
+      height: 300px;
+      width: 100%;
+    }
+    
+    .menu-item:hover {
+      background-color: var(--bg-secondary);
+    }
+    
+    .theme-switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .theme-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--bg-secondary);
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: var(--accent-primary);
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    /* Additional Modern Themes */
+    .theme-aurora {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent-primary: #38bdf8;
+      --accent-secondary: #818cf8;
+      --border-color: #334155;
+      --success-color: #4ade80;
+      --warning-color: #fbbf24;
+      --danger-color: #f87171;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
+    .theme-neon {
+      --bg-primary: #09090b;
+      --bg-secondary: #18181b;
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --accent-primary: #14b8a6;
+      --accent-secondary: #06b6d4;
+      --border-color: #27272a;
+      --success-color: #22c55e;
+      --warning-color: #eab308;
+      --danger-color: #ef4444;
+      background: linear-gradient(45deg, #09090b 0%, #18181b 100%);
+    }
+
+    .theme-candy {
+      --bg-primary: #fdf2f8;
+      --bg-secondary: #fce7f3;
+      --text-primary: #831843;
+      --text-secondary: #be185d;
+      --accent-primary: #ec4899;
+      --accent-secondary: #f472b6;
+      --border-color: #fbcfe8;
+      --success-color: #0d9488;
+      --warning-color: #b45309;
+      --danger-color: #be123c;
+      background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+    }
+
+    .theme-retro {
+      --bg-primary: #fef3c7;
+      --bg-secondary: #fde68a;
+      --text-primary: #92400e;
+      --text-secondary: #b45309;
+      --accent-primary: #d97706;
+      --accent-secondary: #f59e0b;
+      --border-color: #fcd34d;
+      --success-color: #059669;
+      --warning-color: #b45309;
+      --danger-color: #dc2626;
+      background: repeating-linear-gradient(45deg, var(--bg-primary) 0px, var(--bg-primary) 10px, var(--bg-secondary) 10px, var(--bg-secondary) 20px);
+    }
+
+    .theme-midnight {
+      --bg-primary: #020617;
+      --bg-secondary: #0f172a;
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --accent-primary: #6366f1;
+      --accent-secondary: #818cf8;
+      --border-color: #1e293b;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      background: radial-gradient(circle at top right, #0f172a 0%, #020617 100%);
+    }
+
+    /* New Digital Void Theme */
+    .theme-digital-void {
+      --bg-primary: #0a0f1a;
+      --bg-secondary: #141e2c;
+      --text-primary: #00ff95;
+      --text-secondary: #00cc88;
+      --accent-primary: #6366f1;
+      --accent-secondary: #00ffbb;
+      --border-color: #1e293b;
+      --success-color: #00ff88;
+      --warning-color: #ffcc00;
+      --danger-color: #ff3366;
+      background: radial-gradient(circle at 50% 50%, #141e2c 0%, #0a0f1a 100%);
+    }
+
+    /* Card styles for Digital Void theme */
+    .theme-digital-void .card {
+      background: linear-gradient(135deg, rgba(20, 30, 44, 0.7) 0%, rgba(10, 15, 26, 0.7) 100%);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 15px rgba(0, 255, 149, 0.1),
+                  inset 0 0 20px rgba(99, 102, 241, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .theme-digital-void .card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      box-shadow: 0 0 20px rgba(0, 255, 149, 0.2),
+                  inset 0 0 30px rgba(99, 102, 241, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .theme-digital-void .bg-secondary {
+      background: linear-gradient(135deg, rgba(20, 30, 44, 0.8) 0%, rgba(10, 15, 26, 0.8) 100%);
+      backdrop-filter: blur(5px);
+    }
+
+    .theme-digital-void .menu-item:hover {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(0, 255, 149, 0.1) 100%);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    /* Theme Builder Panel Styles */
+    .theme-builder-panel {
+      position: fixed;
+      right: -400px;
+      top: 0;
+      width: 400px;
+      height: 100vh;
+      background-color: var(--bg-primary);
+      border-left: 1px solid var(--border-color);
+      transition: right 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .theme-builder-panel.active {
+      right: 0;
+    }
+
+    .theme-builder-toggle {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 1001;
+      padding: 12px;
+      border-radius: 50%;
+      background-color: var(--accent-primary);
+      color: var(--bg-primary);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .theme-builder-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .color-picker-group {
+      margin-bottom: 1rem;
+    }
+
+    .color-picker-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .color-picker-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.375rem;
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .gradient-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .gradient-option {
+      padding: 0.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.375rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .gradient-option:hover {
+      border-color: var(--accent-primary);
+    }
+
+    .gradient-preview {
+      height: 40px;
+      border-radius: 0.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Theme Preview Section */
+    .theme-preview {
+      margin: 1rem 0;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+    }
+
+    .theme-preview-item {
+      margin-bottom: 0.5rem;
+    }
+
+    .theme-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .theme-action-button {
+      flex: 1;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.375rem;
+      background-color: var(--accent-primary);
+      color: var(--bg-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-action-button:hover {
+      opacity: 0.9;
+    }
+
+    .theme-action-button.secondary {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+  </style>
+</head>
+<body class="theme-light theme-wrapper">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 p-4 border-r border-theme">
+      <div class="flex items-center mb-8">
+        <svg class="w-8 h-8 mr-2 accent-primary rounded" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
+          <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
+        </svg>
+        <h1 class="text-xl font-bold">Analytics Dashboard</h1>
+      </div>
+      
+      <nav class="space-y-2">
+        <a href="#" class="flex items-center p-2 rounded menu-item bg-secondary" data-view="dashboard">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="flex items-center p-2 rounded menu-item" data-view="reports">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+          </svg>
+          <span>Reports</span>
+        </a>
+        <a href="#" class="flex items-center p-2 rounded menu-item" data-view="analytics">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+          </svg>
+          <span>Analytics</span>
+        </a>
+        <a href="#" class="flex items-center p-2 rounded menu-item" data-view="revenue">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
+          </svg>
+          <span>Revenue</span>
+        </a>
+        <a href="#" class="flex items-center p-2 rounded menu-item" data-view="users">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+          </svg>
+          <span>Users</span>
+        </a>
+      </nav>
+      
+      <div class="absolute bottom-0 left-0 p-4 w-64">
+        <div class="mb-4">
+          <label class="block mb-2 text-sm font-medium">Base Themes</label>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <button onclick="setTheme('theme-light')" class="py-1 px-2 bg-white border border-gray-300 rounded text-gray-800 text-sm">Light</button>
+            <button onclick="setTheme('theme-dark')" class="py-1 px-2 bg-gray-800 border border-gray-700 rounded text-white text-sm">Dark</button>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block mb-2 text-sm font-medium">Modern Palettes</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="setTheme('theme-neo-cyberpunk')" class="py-1 px-2 bg-[#0a0b1e] border border-[#1f2458] rounded text-[#00fff2] text-sm">Cyberpunk</button>
+            <button onclick="setTheme('theme-quantum')" class="py-1 px-2 bg-[#1a0b2e] border border-[#3d2a5e] rounded text-[#9d00ff] text-sm">Quantum</button>
+            <button onclick="setTheme('theme-glacier')" class="py-1 px-2 bg-[#eef5ff] border border-[#cce0ff] rounded text-[#0066ff] text-sm">Glacier</button>
+            <button onclick="setTheme('theme-sunset')" class="py-1 px-2 bg-[#2c1810] border border-[#4d2416] rounded text-[#ff6b2c] text-sm">Sunset</button>
+            <button onclick="setTheme('theme-matrix')" class="py-1 px-2 bg-[#0c1714] border border-[#1a332b] rounded text-[#00ff66] text-sm">Matrix</button>
+            <button onclick="setTheme('theme-aurora')" class="py-1 px-2 bg-[#0f172a] border border-[#334155] rounded text-[#38bdf8] text-sm">Aurora</button>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block mb-2 text-sm font-medium">Special Themes</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="setTheme('theme-neon')" class="py-1 px-2 bg-[#09090b] border border-[#27272a] rounded text-[#14b8a6] text-sm">Neon</button>
+            <button onclick="setTheme('theme-candy')" class="py-1 px-2 bg-[#fdf2f8] border border-[#fbcfe8] rounded text-[#831843] text-sm">Candy</button>
+            <button onclick="setTheme('theme-retro')" class="py-1 px-2 bg-[#fef3c7] border border-[#fcd34d] rounded text-[#92400e] text-sm">Retro</button>
+            <button onclick="setTheme('theme-midnight')" class="py-1 px-2 bg-[#020617] border border-[#1e293b] rounded text-[#6366f1] text-sm">Midnight</button>
+            <button onclick="setTheme('theme-digital-void')" class="py-1 px-2 bg-[#0a0f1a] border border-[#1e293b] rounded text-[#00ff95] text-sm">Digital Void</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="flex-1 p-8 overflow-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-bold">Analytics Overview</h1>
+        <div class="flex items-center">
+          <span class="mr-2 text-sm text-secondary">Last updated: March 25, 2025</span>
+          <button class="accent-primary px-4 py-2 rounded">Export Data</button>
+        </div>
+      </div>
+      
+      <!-- Content will be dynamically loaded here -->
+      <div id="main-content"></div>
+    </div>
+  </div>
+
+  <!-- Theme Builder Panel -->
+  <div id="themeBuilderPanel" class="theme-builder-panel">
+    <div class="p-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium">Theme Builder</h3>
+        <button onclick="toggleThemeBuilder()" class="text-sm px-2 py-1 rounded bg-secondary">Close</button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="color-picker-group">
+          <label class="color-picker-label">Background Primary</label>
+          <input type="color" class="color-picker-input" data-var="--bg-primary" onchange="updateCustomTheme(this)">
+        </div>
+        <div class="color-picker-group">
+          <label class="color-picker-label">Background Secondary</label>
+          <input type="color" class="color-picker-input" data-var="--bg-secondary" onchange="updateCustomTheme(this)">
+        </div>
+        <div class="color-picker-group">
+          <label class="color-picker-label">Text Primary</label>
+          <input type="color" class="color-picker-input" data-var="--text-primary" onchange="updateCustomTheme(this)">
+        </div>
+        <div class="color-picker-group">
+          <label class="color-picker-label">Text Secondary</label>
+          <input type="color" class="color-picker-input" data-var="--text-secondary" onchange="updateCustomTheme(this)">
+        </div>
+        <div class="color-picker-group">
+          <label class="color-picker-label">Accent Primary</label>
+          <input type="color" class="color-picker-input" data-var="--accent-primary" onchange="updateCustomTheme(this)">
+        </div>
+        <div class="color-picker-group">
+          <label class="color-picker-label">Accent Secondary</label>
+          <input type="color" class="color-picker-input" data-var="--accent-secondary" onchange="updateCustomTheme(this)">
+        </div>
+        <div class="color-picker-group">
+          <label class="color-picker-label">Border Color</label>
+          <input type="color" class="color-picker-input" data-var="--border-color" onchange="updateCustomTheme(this)">
+        </div>
+        <div class="color-picker-group">
+          <label class="color-picker-label">Success Color</label>
+          <input type="color" class="color-picker-input" data-var="--success-color" onchange="updateCustomTheme(this)">
+        </div>
+        <div class="color-picker-group">
+          <label class="color-picker-label">Warning Color</label>
+          <input type="color" class="color-picker-input" data-var="--warning-color" onchange="updateCustomTheme(this)">
+        </div>
+        <div class="color-picker-group">
+          <label class="color-picker-label">Danger Color</label>
+          <input type="color" class="color-picker-input" data-var="--danger-color" onchange="updateCustomTheme(this)">
+        </div>
+
+        <div class="gradient-options">
+          <label class="color-picker-label">Background Style</label>
+          <select class="color-picker-input" onchange="updateGradient(this.value)">
+            <option value="none">Solid Color</option>
+            <option value="linear">Linear Gradient</option>
+            <option value="radial">Radial Gradient</option>
+            <option value="pattern">Pattern</option>
+          </select>
+        </div>
+
+        <div class="theme-preview">
+          <h4 class="font-medium mb-2">Preview</h4>
+          <div class="theme-preview-item p-2 bg-secondary rounded">Background Secondary</div>
+          <div class="theme-preview-item p-2 text-secondary">Text Secondary</div>
+          <div class="theme-preview-item p-2 accent-primary rounded">Accent Primary</div>
+          <div class="theme-preview-item p-2">
+            <span class="success">Success</span>
+            <span class="warning ml-2">Warning</span>
+            <span class="danger ml-2">Danger</span>
+          </div>
+        </div>
+
+        <div class="theme-actions">
+          <button onclick="saveCustomTheme()" class="theme-action-button">Save Theme</button>
+          <button onclick="exportTheme()" class="theme-action-button secondary">Export</button>
+          <button onclick="importTheme()" class="theme-action-button secondary">Import</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Theme Builder Toggle Button -->
+  <button onclick="toggleThemeBuilder()" class="theme-builder-toggle">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+    </svg>
+  </button>
+
+  <script>
+    // Set Theme
+    function setTheme(theme) {
+      document.body.className = '';
+      document.body.classList.add(theme);
+      document.body.classList.add('theme-wrapper');
+      
+      // Update charts to match theme
+      updateCharts();
+    }
+    
+    // Update charts when theme changes
+    function updateCharts() {
+      if (window.chartInstances) {
+        Object.values(window.chartInstances).forEach(chart => {
+          if (chart && chart.update) {
+            chart.update();
+          }
+        });
+      }
+    }
+
+    // Theme Builder Functions
+    function toggleThemeBuilder() {
+      const panel = document.getElementById('themeBuilderPanel');
+      panel.classList.toggle('active');
+    }
+
+    function updateCustomTheme(input) {
+      const root = document.documentElement;
+      root.style.setProperty(input.dataset.var, input.value);
+      updateCharts();
+    }
+
+    function updateGradient(type) {
+      const root = document.documentElement;
+      const primary = getComputedStyle(root).getPropertyValue('--bg-primary');
+      const secondary = getComputedStyle(root).getPropertyValue('--bg-secondary');
+
+      switch(type) {
+        case 'linear':
+          document.body.style.background = `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`;
+          break;
+        case 'radial':
+          document.body.style.background = `radial-gradient(circle at top right, ${secondary} 0%, ${primary} 100%)`;
+          break;
+        case 'pattern':
+          document.body.style.background = `repeating-linear-gradient(45deg, ${primary} 0px, ${primary} 10px, ${secondary} 10px, ${secondary} 20px)`;
+          break;
+        default:
+          document.body.style.background = primary;
+      }
+    }
+
+    function saveCustomTheme() {
+      const root = document.documentElement;
+      const theme = {
+        name: 'custom-' + Date.now(),
+        colors: {}
+      };
+
+      const variables = [
+        '--bg-primary',
+        '--bg-secondary',
+        '--text-primary',
+        '--text-secondary',
+        '--accent-primary',
+        '--accent-secondary',
+        '--border-color',
+        '--success-color',
+        '--warning-color',
+        '--danger-color'
+      ];
+
+      variables.forEach(variable => {
+        theme.colors[variable] = getComputedStyle(root).getPropertyValue(variable);
+      });
+
+      const savedThemes = JSON.parse(localStorage.getItem('customThemes') || '[]');
+      savedThemes.push(theme);
+      localStorage.setItem('customThemes', JSON.stringify(savedThemes));
+
+      alert('Theme saved successfully!');
+    }
+
+    function exportTheme() {
+      const root = document.documentElement;
+      const theme = {
+        name: 'exported-theme',
+        colors: {}
+      };
+
+      const variables = [
+        '--bg-primary',
+        '--bg-secondary',
+        '--text-primary',
+        '--text-secondary',
+        '--accent-primary',
+        '--accent-secondary',
+        '--border-color',
+        '--success-color',
+        '--warning-color',
+        '--danger-color'
+      ];
+
+      variables.forEach(variable => {
+        theme.colors[variable] = getComputedStyle(root).getPropertyValue(variable);
+      });
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(theme, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "theme.json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+
+    function importTheme() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = function(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const theme = JSON.parse(e.target.result);
+            Object.entries(theme.colors).forEach(([variable, value]) => {
+              document.documentElement.style.setProperty(variable, value);
+            });
+            updateCharts();
+          } catch (error) {
+            alert('Invalid theme file');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+
+    // Initialize color pickers with current theme values
+    function initializeThemeBuilder() {
+      const root = document.documentElement;
+      const colorPickers = document.querySelectorAll('.color-picker-input[type="color"]');
+      colorPickers.forEach(picker => {
+        const variable = picker.dataset.var;
+        const value = getComputedStyle(root).getPropertyValue(variable).trim();
+        picker.value = value.startsWith('#') ? value : '#000000';
+      });
+    }
+
+    // Initialize everything when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeThemeBuilder();
+    });
+  </script>
+</body>
+</html>
