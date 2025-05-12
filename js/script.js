@@ -873,74 +873,72 @@ window.addEventListener('resize', function() {
 });
 
 // Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
-    // Add click event listeners to menu items
-    document.querySelectorAll('.menu-item').forEach(item => {
+function initApp() {
+    // Set up click event listeners for menu items
+    const menuItems = document.querySelectorAll('.menu-item, .mobile-nav-button');
+    menuItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            const viewName = item.getAttribute('data-view');
-            if (viewName) {
-                switchView(viewName);
+            const view = item.getAttribute('data-view');
+            if (view) {
+                switchView(view);
+                
+                // Update active states for both sidebar and mobile navigation
+                document.querySelectorAll('.menu-item, .mobile-nav-button').forEach(navItem => {
+                    navItem.classList.remove('active');
+                });
+                item.classList.add('active');
+                
+                // Close sidebar on mobile after selection
+                if (window.innerWidth <= 768) {
+                    const sidebar = document.querySelector('.sidebar');
+                    const overlay = document.querySelector('.sidebar-overlay');
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                }
             }
         });
     });
 
-    // Set initial view to dashboard
-    switchView('dashboard');
-
-    // Handle window resize for responsive charts
-    let resizeTimeout;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(function() {
-            Object.values(chartInstances).forEach(chart => {
-                if (chart && chart.resize) {
-                    chart.resize();
+    // Initialize charts with resize handler
+    const resizeHandler = debounce(() => {
+        if (window.chartInstances) {
+            Object.values(window.chartInstances).forEach(chart => {
+                if (chart && chart.update) {
+                    chart.update();
                 }
             });
-        }, 250);
-    });
-});
-
-// Mobile navigation handling
-document.querySelectorAll('.mobile-nav-button').forEach(button => {
-    button.addEventListener('click', (e) => {
-        e.preventDefault();
-        const viewName = button.getAttribute('data-view');
-        if (viewName) {
-            // Update active state
-            document.querySelectorAll('.mobile-nav-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            button.classList.add('active');
-            
-            // Switch view
-            switchView(viewName);
         }
-    });
-});
+    }, 250);
 
-// Theme selector popup functionality
+    window.addEventListener('resize', resizeHandler);
+
+    // Initialize the default view
+    switchView('dashboard');
+}
+
+// Add mobile theme popup handling
 function toggleThemePopup() {
     const popup = document.querySelector('.mobile-theme-popup');
     popup.classList.toggle('active');
+    
+    // Close popup when clicking outside
+    if (popup.classList.contains('active')) {
+        document.addEventListener('click', closeThemePopup);
+    } else {
+        document.removeEventListener('click', closeThemePopup);
+    }
 }
 
-// Close theme popup when clicking outside
-document.addEventListener('click', function(event) {
-    const themePopup = document.querySelector('.mobile-theme-popup');
+function closeThemePopup(event) {
+    const popup = document.querySelector('.mobile-theme-popup');
     const themeButton = document.querySelector('.mobile-theme-button');
     
-    if (themePopup && themePopup.classList.contains('active') && 
-        !themePopup.contains(event.target) && 
-        !themeButton.contains(event.target)) {
-        themePopup.classList.remove('active');
+    if (!popup.contains(event.target) && !themeButton.contains(event.target)) {
+        popup.classList.remove('active');
+        document.removeEventListener('click', closeThemePopup);
     }
-});
+}
 
-// Close theme popup when selecting a theme
-document.querySelectorAll('.mobile-theme-option').forEach(option => {
-    option.addEventListener('click', () => {
-        document.querySelector('.mobile-theme-popup').classList.remove('active');
-    });
-});
+// Initialize the app when the DOM is loaded
+document.addEventListener('DOMContentLoaded', initApp);
