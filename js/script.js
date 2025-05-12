@@ -454,10 +454,172 @@ function initViewCharts(view) {
                 initUserDemographicsChart();
                 break;
         }
+
+        // Add resize observer for responsive charts
+        setupResizeObserver();
     }, 0);
 }
 
-// Chart initialization functions
+// Setup resize observer for responsive charts
+function setupResizeObserver() {
+    const resizeObserver = new ResizeObserver(entries => {
+        entries.forEach(entry => {
+            const chartContainer = entry.target;
+            const chartId = chartContainer.querySelector('canvas, [id]')?.id;
+            if (chartId && chartInstances[chartId]) {
+                const chart = chartInstances[chartId];
+                if (chart instanceof Chart) {
+                    chart.resize();
+                } else if (chart.updateOptions) {
+                    chart.updateOptions({
+                        chart: {
+                            width: chartContainer.clientWidth,
+                            height: chartContainer.clientHeight
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    // Observe all chart containers
+    document.querySelectorAll('.chart-container').forEach(container => {
+        resizeObserver.observe(container);
+    });
+}
+
+// Common chart options for responsiveness
+const commonChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: window.innerWidth < 768 ? 'bottom' : 'top',
+            labels: {
+                boxWidth: window.innerWidth < 768 ? 12 : 20,
+                padding: window.innerWidth < 768 ? 10 : 20
+            }
+        }
+    }
+};
+
+// Chart initialization functions with responsive options
+function initRevenueChart() {
+    const ctx = document.getElementById('revenueChart');
+    if (!ctx) return;
+
+    chartInstances.revenueChart = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+            datasets: [{
+                label: 'Revenue',
+                data: [685421, 721053, 758963, 798652, 825410, 845623],
+                borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
+                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') + '33',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            ...commonChartOptions,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value) {
+                            return window.innerWidth < 768 ? 
+                                '$' + (value/1000) + 'k' : 
+                                '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function initAcquisitionChart() {
+    const element = document.querySelector("#acquisitionChart");
+    if (!element) return;
+
+    chartInstances.acquisitionChart = new ApexCharts(element, {
+        series: [{
+            name: 'Paid',
+            data: [350, 420, 490, 520, 580, 620]
+        }, {
+            name: 'Organic',
+            data: [450, 520, 550, 600, 680, 720]
+        }],
+        chart: {
+            type: 'bar',
+            height: 300,
+            stacked: true,
+            toolbar: {
+                show: false
+            }
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '60%',
+            },
+        },
+        dataLabels: {
+            enabled: false
+        },
+        xaxis: {
+            categories: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+        },
+        fill: {
+            opacity: 1
+        },
+        colors: [
+            getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
+            getComputedStyle(document.documentElement).getPropertyValue('--success-color')
+        ],
+        legend: {
+            position: 'top',
+            horizontalAlign: 'right'
+        }
+    });
+    
+    chartInstances.acquisitionChart.render();
+}
+
+function initTrafficChart() {
+    const ctx = document.getElementById('trafficChart');
+    if (!ctx) return;
+
+    chartInstances.trafficChart = new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Organic Search', 'Direct', 'Referral', 'Social', 'Email'],
+            datasets: [{
+                data: [45, 25, 15, 10, 5],
+                backgroundColor: [
+                    getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
+                    getComputedStyle(document.documentElement).getPropertyValue('--success-color'),
+                    getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary'),
+                    getComputedStyle(document.documentElement).getPropertyValue('--warning-color'),
+                    getComputedStyle(document.documentElement).getPropertyValue('--danger-color')
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            cutout: '70%'
+        }
+    });
+}
+
 function initPageViewsChart() {
     const ctx = document.getElementById('pageViewsChart').getContext('2d');
     if (!ctx) return;
@@ -626,117 +788,6 @@ function initUserDemographicsChart() {
     });
 }
 
-// Add new chart initialization functions for dashboard
-function initRevenueChart() {
-    const ctx = document.getElementById('revenueChart');
-    if (!ctx) return;
-
-    chartInstances.revenueChart = new Chart(ctx.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
-            datasets: [{
-                label: 'Revenue',
-                data: [685421, 721053, 758963, 798652, 825410, 845623],
-                borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
-                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') + '33',
-                tension: 0.3,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        }
-    });
-}
-
-function initAcquisitionChart() {
-    const element = document.querySelector("#acquisitionChart");
-    if (!element) return;
-
-    chartInstances.acquisitionChart = new ApexCharts(element, {
-        series: [{
-            name: 'Paid',
-            data: [350, 420, 490, 520, 580, 620]
-        }, {
-            name: 'Organic',
-            data: [450, 520, 550, 600, 680, 720]
-        }],
-        chart: {
-            type: 'bar',
-            height: 300,
-            stacked: true,
-            toolbar: {
-                show: false
-            }
-        },
-        plotOptions: {
-            bar: {
-                horizontal: false,
-                columnWidth: '60%',
-            },
-        },
-        dataLabels: {
-            enabled: false
-        },
-        xaxis: {
-            categories: ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
-        },
-        fill: {
-            opacity: 1
-        },
-        colors: [
-            getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
-            getComputedStyle(document.documentElement).getPropertyValue('--success-color')
-        ],
-        legend: {
-            position: 'top',
-            horizontalAlign: 'right'
-        }
-    });
-    
-    chartInstances.acquisitionChart.render();
-}
-
-function initTrafficChart() {
-    const ctx = document.getElementById('trafficChart');
-    if (!ctx) return;
-
-    chartInstances.trafficChart = new Chart(ctx.getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Organic Search', 'Direct', 'Referral', 'Social', 'Email'],
-            datasets: [{
-                data: [45, 25, 15, 10, 5],
-                backgroundColor: [
-                    getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
-                    getComputedStyle(document.documentElement).getPropertyValue('--success-color'),
-                    getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary'),
-                    getComputedStyle(document.documentElement).getPropertyValue('--warning-color'),
-                    getComputedStyle(document.documentElement).getPropertyValue('--danger-color')
-                ],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            },
-            cutout: '70%'
-        }
-    });
-}
-
 // View switching function
 function switchView(viewName) {
     const view = views[viewName];
@@ -765,7 +816,61 @@ function switchView(viewName) {
     if (activeMenuItem) {
         activeMenuItem.classList.add('bg-secondary');
     }
+
+    // Close mobile menu if open
+    if (window.innerWidth <= 768) {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+    }
 }
+
+// Add mobile menu toggle functionality
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const body = document.body;
+    
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+    
+    // Prevent body scrolling when sidebar is open
+    if (sidebar.classList.contains('active')) {
+        body.style.overflow = 'hidden';
+    } else {
+        body.style.overflow = '';
+    }
+}
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', function(event) {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const mobileToggle = document.querySelector('.mobile-menu-toggle');
+    
+    if (window.innerWidth <= 768 && 
+        !sidebar.contains(event.target) && 
+        !mobileToggle.contains(event.target) && 
+        sidebar.classList.contains('active')) {
+        toggleSidebar();
+    }
+});
+
+// Handle window resize
+window.addEventListener('resize', function() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const body = document.body;
+    
+    if (window.innerWidth > 768) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+        body.style.overflow = '';
+    }
+});
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
@@ -782,4 +887,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set initial view to dashboard
     switchView('dashboard');
+
+    // Handle window resize for responsive charts
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            Object.values(chartInstances).forEach(chart => {
+                if (chart && chart.resize) {
+                    chart.resize();
+                }
+            });
+        }, 250);
+    });
+});
+
+// Mobile navigation handling
+document.querySelectorAll('.mobile-nav-button').forEach(button => {
+    button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const viewName = button.getAttribute('data-view');
+        if (viewName) {
+            // Update active state
+            document.querySelectorAll('.mobile-nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+            
+            // Switch view
+            switchView(viewName);
+        }
+    });
+});
+
+// Theme selector popup functionality
+function toggleThemePopup() {
+    const popup = document.querySelector('.mobile-theme-popup');
+    popup.classList.toggle('active');
+}
+
+// Close theme popup when clicking outside
+document.addEventListener('click', function(event) {
+    const themePopup = document.querySelector('.mobile-theme-popup');
+    const themeButton = document.querySelector('.mobile-theme-button');
+    
+    if (themePopup && themePopup.classList.contains('active') && 
+        !themePopup.contains(event.target) && 
+        !themeButton.contains(event.target)) {
+        themePopup.classList.remove('active');
+    }
+});
+
+// Close theme popup when selecting a theme
+document.querySelectorAll('.mobile-theme-option').forEach(option => {
+    option.addEventListener('click', () => {
+        document.querySelector('.mobile-theme-popup').classList.remove('active');
+    });
 });
