@@ -899,7 +899,8 @@ function initApp() {
             }
         });
     });
-
+    
+    switchView('dashboard');
     // Initialize charts with resize handler
     const resizeHandler = debounce(() => {
         if (window.chartInstances) {
